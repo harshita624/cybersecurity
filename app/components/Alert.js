@@ -1,42 +1,28 @@
-import React from 'react'
+// components/Alert.js
+"use client"
 
-function Alert(props) {
-  // Destructure props with default values
-  const { 
-    children, 
-    type = 'info', 
-    title, 
-    onClose 
-  } = props;
+import { X } from 'lucide-react';
 
-  // Define color schemes for different alert types
-  const types = {
-    info: 'bg-blue-100 border-blue-500 text-blue-900',
-    success: 'bg-green-100 border-green-500 text-green-900',
-    warning: 'bg-yellow-100 border-yellow-500 text-yellow-900',
-    error: 'bg-red-100 border-red-500 text-red-900'
+export default function Alert({ message, type = 'info', onClose }) {
+  const baseStyles = "fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center justify-between max-w-sm";
+  const typeStyles = {
+    info: "bg-blue-100 text-blue-800",
+    success: "bg-green-100 text-green-800",
+    error: "bg-red-100 text-red-800",
+    warning: "bg-yellow-100 text-yellow-800"
   };
 
   return (
-    <div className={`${types[type]} border-l-4 p-4 mb-4 rounded`}>
-      {title && (
-        <div className="font-bold mb-2">{title}</div>
+    <div className={`${baseStyles} ${typeStyles[type]}`}>
+      <span>{message}</span>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="ml-4 hover:opacity-70 transition-opacity"
+        >
+          <X className="w-4 h-4" />
+        </button>
       )}
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          {children}
-        </div>
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="ml-4 text-gray-500 hover:text-gray-700"
-          >
-            ×
-          </button>
-        )}
-      </div>
     </div>
   );
 }
-
-export default Alert;

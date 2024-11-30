@@ -1,11 +1,14 @@
 
+// models/Review.js
 import mongoose from "mongoose";
 
-const reviewSchema = new mongoose.Schema({
+// Define the schema
+const ReviewSchema = new mongoose.Schema({
   name: { type: String, required: true },
   reviewText: { type: String, required: true },
-  rating: { type: Number, required: true, min: 1, max: 5 },
-  timestamp: { type: Date, default: Date.now },
-});
+  rating: { type: Number, required: true, min: 1, max: 5 }, // Rating between 1 and 5
+}, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
 
-export default mongoose.models.Review || mongoose.model("Review", reviewSchema);
+// Export the model
+export default mongoose.models.Review || mongoose.model("Review", ReviewSchema);
+

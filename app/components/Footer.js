@@ -13,13 +13,20 @@ const Footer = () => {
     >
       <div className="container mx-auto">
         <div className="mb-4">
-          <p>© 2024 CyberSecure. All rights reserved.</p>
+          <p className="text-lg font-semibold">© 2024 CyberSecure. All rights reserved.</p>
+          <p className="text-sm mt-2 italic">
+            "No matter who invades your privacy, we will protect your rights fiercely."
+          </p>
+          <p className="text-sm mt-2">Thank you for trusting us with your security!</p>
         </div>
         <div className="flex justify-center space-x-4 mb-4">
           <a href="/about" className="hover:underline">About</a>
           <a href="/contact" className="hover:underline">Contact</a>
           <a href="/privacy" className="hover:underline">Privacy Policy</a>
           <a href="/terms" className="hover:underline">Terms of Service</a>
+        </div>
+        <div className="flex justify-center space-x-4 mb-4">
+          <p className="text-sm">Join our community for the latest updates!</p>
         </div>
         <div className="flex justify-center space-x-4">
           <a href="#" aria-label="Facebook">

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion"; // Import motion from framer-motion
-import { AiOutlineHome, AiOutlineInfoCircle, AiOutlineAppstore, AiOutlineRead, AiOutlineMail } from "react-icons/ai"; // Importing icons from react-icons
+import { motion } from "framer-motion";
+import { AiOutlineHome, AiOutlineInfoCircle, AiOutlineAppstore, AiOutlineRead, AiOutlineMail } from "react-icons/ai";
+import Image from "next/image";
 import React from "react";
 
 const Navbar = () => {
@@ -12,6 +13,7 @@ const Navbar = () => {
         <img className="rounded-full" src="/images/protect1.gif" width={44} height={44} alt="Logo" />
         <span className="ml-3 text-xl font-bold">CyberSecure</span>
       </div>
+
       <ul className="flex gap-8">
         <li>
           <motion.div whileHover={{ scale: 1.1 }} className="flex items-center">
