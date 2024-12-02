@@ -1,6 +1,7 @@
 import { compare } from 'bcrypt';
 import connectMongo from '../../../lib/mongodb';
-import User from '../../../models/User';  // Going up 3 levels to the root folder
+import User from '../../../models/User'; // Going back 3 levels to reach the models directory
+// Going up 3 levels to the root folder
 
 
 export async function POST(req) {

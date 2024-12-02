@@ -1,6 +1,7 @@
 import { hash } from 'bcrypt';
 import connectMongo from '../../../lib/mongodb';
-import User from '../../..models/User';
+import User from '../../../models/User'; // Going back 3 levels to reach the models directory
+
 
 export async function POST(req) {
   try {
