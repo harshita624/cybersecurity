@@ -1,7 +1,7 @@
 // pages/api/reviews/index.js
 
-import connectToDatabase from "@/lib/mongodb"; // Adjust if the path is different
-import Review from "@/models/Review"; // Adjust if the path is different
+import connectToDatabase from "@/app/lib/mongodb"; // Adjust if the path is different
+import Review from "@/app/models/Review"; // Adjust if the path is different
 
 const handler = async (req, res) => {
   try {

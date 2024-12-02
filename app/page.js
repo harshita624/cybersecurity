@@ -15,7 +15,7 @@ export default function Home() {
   const [subscribeMessage, setSubscribeMessage] = useState("");
   const [reviews, setReviews] = useState([]);
   const [showMore, setShowMore] = useState(false);
-
+  const [name, setName] = useState("");
   // Security Tools
   const securityTools = [
     {
@@ -43,7 +43,11 @@ export default function Home() {
       action: "View Guide"
     }
   ];
-
+  const heroAnimation = useSpring({
+    from: { opacity: 0, transform: "translateY(-50px)" },
+    to: { opacity: 1, transform: "translateY(0px)" },
+    delay: 200,
+  });
   // Pricing Packages
   const securityPackages = [
     {
@@ -122,12 +126,64 @@ export default function Home() {
   ];
 
   // Newsletter Subscription Handler
-  const handleSubscribe = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubscribeMessage("Thank you for subscribing to our security updates!");
-    setEmail("");
+  
+    // Validate email
+    if (!email || !email.includes('@')) {
+      setSubscribeMessage("Please enter a valid email address.");
+      return;
+    }
+  
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: email,
+          name: name // Optional: If you want to capture name as well
+        }),
+      });
+  
+      // Add more robust error handling
+      if (!response.ok) {
+        // Try to parse error message, but handle cases where response might not be JSON
+        let errorMessage = "Subscription failed. Please try again.";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+          // If response is not JSON, use text
+          try {
+            errorMessage = await response.text();
+          } catch {
+            // Fallback to generic error
+            errorMessage = `Error ${response.status}: ${response.statusText}`;
+          }
+        }
+  
+        setSubscribeMessage(errorMessage);
+        return;
+      }
+  
+      // Parse response
+      const responseData = await response.json();
+  
+      // Clear the email input
+      setEmail("");
+      
+      // Set a success message
+      setSubscribeMessage("Subscription successful! Check your email.");
+  
+      // Redirect to nearest police station page
+      router.push("/nearest-station");
+  
+    } catch (error) {
+      // Handle network errors or unexpected issues
+      console.error("Subscription Error:", error);
+      setSubscribeMessage(error.message || "An unexpected error occurred. Please try again.");
+    }
   };
-
   return (
     <div className="bg-[#0A0A0A] text-white min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -162,24 +218,25 @@ export default function Home() {
 
         {/* Hero Section */}
         <section className="text-center py-24">
-          <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF] mb-6">
-            Advanced Cybersecurity Solutions
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
-            Protect your digital ecosystem with intelligent, adaptive security strategies that anticipate and neutralize threats before they emerge.
-          </p>
-          <div className="flex justify-center space-x-6">
-            <a href="/form"><button className="px-10 py-4 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90">
-              Start Protection
-            </button>
-            </a>
-            <a href="/learn"><button className="px-10 py-4 border border-[#7B61FF] text-[#7B61FF] rounded-lg hover:bg-[#7B61FF]/10">
-              Learn More
-            </button>
-            </a>
-          </div>
-        </section>
-
+  <animated.div style={heroAnimation}>
+    <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF] mb-6">
+      Advanced Cybersecurity Solutions
+    </h1>
+    <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
+      Protect your digital ecosystem with intelligent, adaptive security strategies that anticipate and neutralize threats before they emerge.
+    </p>
+    <div className="flex justify-center space-x-6">
+      <a href="/form"><button className="px-10 py-4 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90">
+        Start Protection
+      </button>
+      </a>
+      <a href="/learn"><button className="px-10 py-4 border border-[#7B61FF] text-[#7B61FF] rounded-lg hover:bg-[#7B61FF]/10">
+        Learn More
+      </button>
+      </a>
+    </div>
+  </animated.div>
+</section>
         {/* Security Tools */}
         <section id="tools" className="py-16">
           <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
@@ -287,7 +344,7 @@ export default function Home() {
             <p className="text-gray-300 mb-8">
               Subscribe to our newsletter for the latest cybersecurity insights, threat intelligence, and protection strategies.
             </p>
-            <form onSubmit={handleSubscribe} className="flex flex-col space-y-4">
+            <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
               <input 
                 type="email"
                 value={email}
