@@ -1,9 +1,9 @@
-import Navbar from '../components/Navbar';
+
 import react from 'react';
 export default function Home() {
   return (
     <div>
-      <Navbar />
+    
       <main className="min-h-screen bg-gray-100 flex flex-col items-center py-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">
           Welcome to CyberSecure
