@@ -2,6 +2,11 @@
 
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, FileText, Upload, X, Check, Home } from 'lucide-react';
+import emailjs from 'emailjs-com';
+import { useRouter } from 'next/router';
+
+const goToHome = () => router.push('/');
+
 
 const FormPage = () => {
   const [formData, setFormData] = useState({
@@ -88,10 +93,44 @@ const FormPage = () => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmissionStatus('Your complaint has been submitted!');
-    resetForm();
-  };
+  e.preventDefault();
+
+  
+
+  // Your form data here
+  const formData = {
+    name: "",
+    email: "",
+    phone: "",
+    dob: {
+        day: "",
+        month: "",
+        year: "",
+    },
+};
+
+const templateParams = {
+  name: formData?.name || "",
+  email: formData?.email || "",
+  phone: formData?.phone || "",
+  dob: `${formData?.dob?.day || ""}-${formData?.dob?.month || ""}-${formData?.dob?.year || ""}`,
+};
+
+
+  
+  emailjs
+  .send('service_zq2u0q6', 'template_kabtynl', templateParams, 'CdnXrL4puw-y-Q5_y')
+  .then(
+    (result) => {
+      console.log('Success:', result.text);
+      setSubmissionStatus('Form submitted successfully!');
+    },
+    (error) => {
+      console.error('Error:', error.text);
+      setSubmissionStatus('There was an error submitting your form. Please try again.');
+    }
+  );
+};
 
   const resetForm = () => {
     setFormData({

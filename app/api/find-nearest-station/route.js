@@ -1,40 +1,76 @@
 
-import { NextResponse } from 'next/server';
-import policeStations from '../../../data/police-stations.json';
-import { calculateDistance } from '../../../lib/utils';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const latitude = parseFloat(searchParams.get('latitude'));
-  const longitude = parseFloat(searchParams.get('longitude'));
+const NearestStationPage = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [station, setStation] = useState(null);
+  const router = useRouter();
 
-  if (!latitude || !longitude) {
-    return NextResponse.json(
-      { error: 'Latitude and longitude are required' }, 
-      { status: 400 }
-    );
-  }
+  useEffect(() => {
+    const fetchNearestStation = async () => {
+      console.log('Attempting to fetch geolocation...');
+      
+      // Get current geolocation
+      if (navigator.geolocation) {
+        setLoading(true);
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log('Geolocation found:', latitude, longitude);
 
-  // Find nearest station
-  const nearestStation = policeStations.reduce((nearest, station) => {
-    const distance = calculateDistance(
-      latitude, 
-      longitude, 
-      station.latitude, 
-      station.longitude
-    );
+          try {
+            console.log('Fetching nearest station...');
+            // Call the API with latitude and longitude
+            const response = await fetch(`/api/nearest-station?latitude=${latitude}&longitude=${longitude}`);
+            const data = await response.json();
 
-    return (!nearest || distance < nearest.distance) 
-      ? { ...station, distance } 
-      : nearest;
-  }, null);
+            if (response.ok && data.station) {
+              console.log('Nearest station found:', data.station);
+              setStation(data.station);
 
-  if (nearestStation) {
-    return NextResponse.json({ station: nearestStation });
-  } else {
-    return NextResponse.json(
-      { error: 'No police station found' }, 
-      { status: 404 }
-    );
-  }
-}
+              // Ensure the redirection logic is triggered
+              console.log('Redirecting to /nearest-station');
+              router.push('/nearest-station'); // Make sure this path is correct
+            } else {
+              console.error('No station found or error:', data.error);
+              setError(data.error || 'No station found');
+            }
+          } catch (error) {
+            console.error('Error fetching nearest station:', error);
+            setError('Failed to fetch nearest station.');
+          } finally {
+            setLoading(false);
+          }
+        }, () => {
+          console.error('Unable to retrieve location.');
+          setError('Unable to retrieve location.');
+          setLoading(false);
+        });
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+        setError('Geolocation is not supported by this browser.');
+        setLoading(false);
+      }
+    };
+
+    fetchNearestStation();
+  }, [router]);
+
+  return (
+    <div>
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {station && (
+        <div>
+          <h2>Nearest Police Station</h2>
+          <p>Name: {station.name}</p>
+          <p>Address: {station.address}</p>
+          <p>Distance: {station.distance} km</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default NearestStationPage;

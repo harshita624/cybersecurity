@@ -8,7 +8,7 @@ export async function POST(request) {
     // Validate input
     if (!userDetails || !location || !station) {
       return NextResponse.json(
-        { error: 'Missing required information' }, 
+        { error: 'Missing required information' },
         { status: 400 }
       );
     }
@@ -17,8 +17,8 @@ export async function POST(request) {
       service: 'Gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
     const message = `
@@ -42,17 +42,15 @@ export async function POST(request) {
       from: process.env.EMAIL_USER,
       to: station.email || station.phone,
       subject: 'Emergency Incident Report',
-      text: message
+      text: message,
     });
 
-    return NextResponse.json({ 
-      message: 'Details sent to police station successfully' 
-    });
-
+    // After the email is sent, redirect to the homepage
+    return NextResponse.redirect('http://localhost:3000/');  // Replace with your actual homepage URL
   } catch (error) {
     console.error('Error in notify-police route:', error);
     return NextResponse.json(
-      { error: 'Failed to process request' }, 
+      { error: 'Failed to process request' },
       { status: 500 }
     );
   }

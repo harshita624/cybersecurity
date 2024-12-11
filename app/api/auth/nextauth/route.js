@@ -1,34 +1,38 @@
+// app/api/auth/nextauth/route.js
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import connectMongo from '../../../../lib/mongodb';
-import User from '../../../../models/User';
-import { compare } from 'bcrypt';
+import { MongoClient } from 'mongodb';
 
-const handler = NextAuth({
+const uri = "mongodb+srv://23053364:kartik4903@cluster0.ma397.mongodb.net/myapp?retryWrites=true&w=majority";
+
+export const authOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        await connectMongo();
-        const user = await User.findOne({ email: credentials.email });
+        const client = new MongoClient(uri);
+        await client.connect();
+        const db = client.db("myapp");
+        const usersCollection = db.collection("users");
 
-        if (user && (await compare(credentials.password, user.password))) {
-          return { id: user._id, name: user.name, email: user.email };
+        const user = await usersCollection.findOne({ email: credentials.email });
+
+        if (user && user.password === credentials.password) {
+          return { id: user._id, email: user.email };
+        } else {
+          return null;
         }
-        throw new Error('Invalid credentials');
       },
     }),
   ],
   pages: {
-    signIn: '/signin',
+    signIn: '/auth/signin', // Custom sign-in page
   },
-  session: {
-    strategy: 'jwt',
-  },
-});
+};
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

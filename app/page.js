@@ -3,56 +3,91 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { useSpring, animated } from "@react-spring/web";
-import { useSession, signIn, signOut } from "next-auth/react"; 
+import { useSession, signIn, signOut, Session } from "next-auth/react"; 
 import { Shield, Bell, Lock, Book, ChevronRight, X, CheckCircle } from 'lucide-react';
+import Papa from "papaparse";
+import ThreatDetectionPrediction from './components/ThreatDetectionPrediction';
 import ImageRecognition from "./components/ImageRecognition";
 
 export default function Home() {
-  const { data: session } = useSession();
+  // Session and Router Management
+  const { data: session } = useSession(); 
   const router = useRouter();
 
   // State Management
+  const [threatData, setThreatData] = useState("");
+  const [detectionResult, setDetectionResult] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
+  const [file, setFile] = useState(null);
+  const [password, setPassword] = useState("");
+  const [signInError, setSignInError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [subscribeMessage, setSubscribeMessage] = useState("");
-  const [reviews, setReviews] = useState([]);
-  const [showMore, setShowMore] = useState(false);
   const [name, setName] = useState("");
-  const [scanResults, setScanResults] = useState(null);
+  const scanResults = null;
 
-  // Security Tools
+  // Redirect if session exists
+  if(session){
+    router.replace('/homePage')
+  }
+
+  // Animation Configuration
+  const heroAnimation = useSpring({
+    from: { opacity: 0, transform: "translateY(-50px)" },
+    to: { opacity: 1, transform: "translateY(0px)" },
+    delay: 200,
+  });
+
+  // Static Data Collections
   const securityTools = [
     {
       name: "Threat Scanner",
       description: "Real-time vulnerability detection",
       icon: <Shield className="w-8 h-8 text-[#00F5D4]" />,
       action: "Scan Now",
-      onClick: () => triggerScan(),  // Call triggerScan when the button is clicked
+      onClick: () => {
+        // Trigger a real-time scan
+        alert("Starting Threat Scanner...");
+        // Add logic to invoke the scanning functionality here
+        triggerScan();
+      },
     },
     {
       name: "Password Vault",
       description: "Secure credential management",
       icon: <Lock className="w-8 h-8 text-[#00F5D4]" />,
-      action: "Manage Passwords"
+      action: "Manage Passwords",
+      onClick: () => {
+        // Redirect to password management
+        window.location.href = "/password-vault";
+      },
     },
     {
       name: "Incident Response",
       description: "Rapid threat mitigation",
       icon: <Bell className="w-8 h-8 text-[#00F5D4]" />,
-      action: "Activate Response"
+      action: "Activate Response",
+      onClick: () => {
+        // Show incident response options
+        alert("Incident Response Activated!");
+        // Implement response activation logic here
+      },
     },
     {
       name: "Security Guide",
       description: "Comprehensive protection strategies",
       icon: <Book className="w-8 h-8 text-[#00F5D4]" />,
-      action: "View Guide"
-    }
+      action: "View Guide",
+      onClick: () => {
+        // Redirect to the security guide page
+        window.location.href = "/security-guide";
+      },
+    },
   ];
-  const heroAnimation = useSpring({
-    from: { opacity: 0, transform: "translateY(-50px)" },
-    to: { opacity: 1, transform: "translateY(0px)" },
-    delay: 200,
-  });
-  // Pricing Packages
+  
   const securityPackages = [
     {
       name: "Individual Shield",
@@ -93,38 +128,7 @@ export default function Home() {
       ]
     }
   ];
-  const triggerScan = () => {
-    setSubscribeMessage("Scanning for vulnerabilities, please wait...");
 
-    // Simulate a delay for the scan (e.g., 2 seconds)
-    setTimeout(() => {
-      // Simulate scan results
-      const results = { status: "No vulnerabilities found", level: "Safe" };
-      setScanResults(results); // Set scan results
-      setSubscribeMessage(`Scan complete: ${results.status}`); // Update message
-    }, 2000);
-  };
-
-  
-
-
-  // FAQ Data
-  const faqData = [
-    {
-      question: "How do we protect against emerging threats?",
-      answer: "We use advanced AI-powered threat detection and continuous monitoring to identify and mitigate potential security risks in real-time."
-    },
-    {
-      question: "What makes our approach unique?",
-      answer: "Our proactive cybersecurity strategy combines cutting-edge technology, expert analysis, and personalized protection mechanisms."
-    },
-    {
-      question: "How quickly can we respond to incidents?",
-      answer: "Our rapid response team provides immediate intervention, with initial assessment and action within 15 minutes of threat detection."
-    }
-  ];
-
-  // Team Members
   const teamMembers = [
     {
       name: "Elena Rodriguez",
@@ -143,65 +147,167 @@ export default function Home() {
     }
   ];
 
-  // Newsletter Subscription Handler
+  const faqData = [
+    {
+      question: "How do we protect against emerging threats?",
+      answer: "We use advanced AI-powered threat detection and continuous monitoring to identify and mitigate potential security risks in real-time."
+    },
+    {
+      question: "What makes our approach unique?",
+      answer: "Our proactive cybersecurity strategy combines cutting-edge technology, expert analysis, and personalized protection mechanisms."
+    },
+    {
+      question: "How quickly can we respond to incidents?",
+      answer: "Our rapid response team provides immediate intervention, with initial assessment and action within 15 minutes of threat detection."
+    }
+  ];
+
+  // Event Handlers
+  const handleThreatDetection = async (e) => {
+    e.preventDefault();
+    let inputToSend = threatData;
+
+    if (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = async () => {
+        const csvData = fileReader.result;
+        const parsedData = Papa.parse(csvData, { header: true }).data;
+        inputToSend = JSON.stringify(parsedData);
+        await sendThreatDetectionRequest(inputToSend);
+      };
+      fileReader.readAsText(file);
+    } else if (threatData) {
+      await sendThreatDetectionRequest(inputToSend);
+    } else {
+      setDetectionResult("Please provide input for detection.");
+    }
+  };
+
+  const sendThreatDetectionRequest = async (input) => {
+    setIsScanning(true);
+    setDetectionResult("Scanning for threats...");
+
+    try {
+      const response = await fetch('/api/threat-detection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setDetectionResult(`Scan complete: ${result.message}`);
+      } else {
+        setDetectionResult("Scan failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during scan:", error);
+      setDetectionResult("Error during scan. Please try again.");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const uploadedFile = e.target.files[0];
+    if (uploadedFile) {
+      setFile(uploadedFile);
+    }
+  };
+
+  const handleSubmitSignIn = async (event) => {
+    event.preventDefault();
+  
+    try {
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Sign-in successful:', data.message);
+      } else {
+        console.error('Sign-in failed:', data.message);
+        setSignInError(data.message);
+      }
+    } catch (error) {
+      console.error('Error during sign-in:', error);
+      setSignInError('An error occurred during sign-in.');
+    }
+  };
+
+  const triggerScan = async () => {
+    setSubscribeMessage("Scanning for vulnerabilities, please wait...");
+    
+    try {
+        const response = await fetch('/api/threat-detection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: "Sample input for detection" }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            setSubscribeMessage(`Scan complete: ${result.message}`);
+        } else {
+            setSubscribeMessage("Scan failed. Please try again.");
+        }
+    } catch (error) {
+        console.error("Error during threat detection:", error);
+        setSubscribeMessage("Error during scan. Please try again.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Validate email
-    if (!email || !email.includes('@')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
       setSubscribeMessage("Please enter a valid email address.");
       return;
     }
+  
+    setIsLoading(true);
+    setSubscribeMessage("");
   
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          email: email,
-          name: name // Optional: If you want to capture name as well
+          email: email.trim(),
+          name: name.trim() 
         }),
       });
   
-      // Add more robust error handling
-      if (!response.ok) {
-        // Try to parse error message, but handle cases where response might not be JSON
-        let errorMessage = "Subscription failed. Please try again.";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (parseError) {
-          // If response is not JSON, use text
-          try {
-            errorMessage = await response.text();
-          } catch {
-            // Fallback to generic error
-            errorMessage = `Error ${response.status}: ${response.statusText}`;
-          }
-        }
+      const responseData = await response.json();
   
-        setSubscribeMessage(errorMessage);
+      if (!response.ok) {
+        setSubscribeMessage(responseData.message || "Subscription failed. Please try again.");
         return;
       }
   
-      // Parse response
-      const responseData = await response.json();
-  
-      // Clear the email input
       setEmail("");
-      
-      // Set a success message
-      setSubscribeMessage("Subscription successful! Check your email.");
+      setName("");
+      setSubscribeMessage("Subscription successful! Your details are now sent to the police.");
   
-      // Redirect to nearest police station page
-      router.push("/nearest-station");
+      setTimeout(() => {
+        router.push("/nearest-station");
+      }, 2000);
   
     } catch (error) {
-      // Handle network errors or unexpected issues
       console.error("Subscription Error:", error);
-      setSubscribeMessage(error.message || "An unexpected error occurred. Please try again.");
+      setSubscribeMessage("Network error. Please check your connection and try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
+
   return (
     <div className="bg-[#0A0A0A] text-white min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -216,71 +322,171 @@ export default function Home() {
             <a href="/blog" className="text-gray-300 hover:text-[#00F5D4]">Blog</a>
             <a href="/services" className="text-gray-300 hover:text-[#00F5D4]">Services</a>
             <a href="/contact" className="text-gray-300 hover:text-[#00F5D4]">Contact</a>
-          </div>
-          {session ? (
-            <button 
-              onClick={() => signOut()}
-              className="px-6 py-2 bg-[#7B61FF] text-white rounded-lg hover:bg-opacity-90"
-            >
-              Sign Out
-            </button>
-          ) : (
-            <button 
-              onClick={() => router.push('/signin')}
-              className="px-6 py-2 bg-[#00F5D4] text-black rounded-lg hover:bg-opacity-90"
+            <button
+              onClick={() => setShowSignInModal(true)}
+              className="bg-[#00F5D4] text-black px-4 py-2 rounded-lg"
             >
               Sign In
             </button>
-          )}
+
+            {/* Sign-In Modal */}
+            {showSignInModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-[#1A1A1A] p-8 rounded-xl shadow-lg max-w-md w-full">
+                  <h2 className="text-3xl font-semibold text-[#00F5D4] mb-6 text-center">Sign In</h2>
+                  <form onSubmit={handleSubmitSignIn}>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-300" htmlFor="email">Email</label>
+                      <input
+                        type="email"
+                        id="email"
+                        className="w-full px-4 py-3 mt-2 bg-[#2A2A2A] border border-[#333] rounded-lg text-white"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-300" htmlFor="password">Password</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          id="password"
+                          className="w-full px-4 py-3 mt-2 bg-[#2A2A2A] border border-[#333] rounded-lg text-white"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute top-2 right-3 text-gray-300"
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                    </div>
+                    {signInError && (
+                      <p className="text-red-500 text-sm mb-4">{signInError}</p>
+                    )}
+                    <button 
+                      type="submit" 
+                      className="w-full py-3 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-[#00D2A1] transition-colors"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Signing In..." : "Sign In"}
+                    </button>
+                  </form>
+                  <div className="text-center mt-4">
+                    <button 
+                      className="text-sm text-[#7B61FF] hover:underline"
+                      onClick={() => setShowSignInModal(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Hero Section */}
         <section className="text-center py-24">
-  <animated.div style={heroAnimation}>
-    <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF] mb-6">
-      Advanced Cybersecurity Solutions
-    </h1>
-    <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
-      Protect your digital ecosystem with intelligent, adaptive security strategies that anticipate and neutralize threats before they emerge.
-    </p>
-    <div className="flex justify-center space-x-6">
-      <a href="/form"><button className="px-10 py-4 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90">
-        Start Protection
-      </button>
-      </a>
-      <a href="/learn"><button className="px-10 py-4 border border-[#7B61FF] text-[#7B61FF] rounded-lg hover:bg-[#7B61FF]/10">
-        Learn More
-      </button>
-      </a>
-    </div>
-  </animated.div>
-</section>
-        {/* Security Tools */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
-          {securityTools.map((tool, index) => (
-            <div key={index} className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#00F5D4] transition-all">
-              <div className="mb-4">{tool.icon}</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#00F5D4]">{tool.name}</h3>
-              <p className="text-gray-400 mb-4">{tool.description}</p>
-              {scanResults ? (
-                <div className="text-green-400">{scanResults.status} - {scanResults.level}</div>
-              ) : (
-                <button onClick={tool.onClick} className="flex items-center text-[#00F5D4] hover:text-opacity-80">
-                  {tool.action}
-                  <ChevronRight className="ml-2" />
-                </button>
-              )}
+          <animated.div style={heroAnimation}>
+            <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF] mb-6">
+              Advanced Cybersecurity Solutions
+            </h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
+              Protect your digital ecosystem with intelligent, adaptive security strategies that anticipate and neutralize threats before they emerge.
+            </p>
+            <div className="flex justify-center space-x-6">
+              <a href="/form"><button className="px-10 py-4 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90">
+                Start Protection
+              </button>
+              </a>
+              <a href="/learn"><button className="px-10 py-4 border border-[#7B61FF] text-[#7B61FF] rounded-lg hover:bg-[#7B61FF]/10">
+                Learn More
+              </button>
+              </a>
             </div>
-          ))}
+          </animated.div>
         </section>
 
-        <section id="image-recognition" className="py-16">
-          <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
-            Image Recognition Tool
-          </h2>
-          <ImageRecognition />
-        </section>
-        
+        {/* Security Tools */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {securityTools.map((tool, index) => (
+    <div key={index} className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#00F5D4] transition-all">
+      <div className="mb-4">{tool.icon}</div>
+      <h3 className="text-xl font-semibold mb-2 text-[#00F5D4]">{tool.name}</h3>
+      <p className="text-gray-400 mb-4">{tool.description}</p>
+      {scanResults ? (
+        <div className="text-green-400">{scanResults.status} - {scanResults.level}</div>
+      ) : (
+        <button onClick={tool.onClick} className="flex items-center text-[#00F5D4] hover:text-opacity-80">
+          {tool.action}
+          <ChevronRight className="ml-2" />
+        </button>
+      )}
+    </div>
+  ))}
+</section>
+
+
+
+
+               {/* Threat Detection Form */}
+               <section className="py-16 mt-16 bg-[#1A1A1A] rounded-xl shadow-lg">
+  <div className="max-w-4xl mx-auto text-center">
+    <h2 className="text-4xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+      Threat Detection
+    </h2>
+    <p className="text-gray-300 mb-12">
+      Analyze your data for potential threats using advanced algorithms. Enter data manually or upload a CSV file to start scanning.
+    </p>
+
+    <form onSubmit={handleThreatDetection} className="bg-[#2A2A2A] p-8 rounded-lg shadow-md">
+      <textarea
+        value={threatData}
+        onChange={(e) => setThreatData(e.target.value)}
+        className="w-full p-4 text-white bg-[#1A1A1A] border border-[#333] rounded-md focus:ring-2 focus:ring-[#00F5D4]"
+        placeholder="Enter the data to scan for threats..."
+        rows="6"
+      />
+
+      <div className="mt-6 text-left">
+        <label
+          htmlFor="csv-file"
+          className="block text-sm font-medium text-gray-300 mb-2"
+        >
+          Or upload a CSV file:
+        </label>
+        <input
+          type="file"
+          id="csv-file"
+          accept=".csv"
+          onChange={handleFileChange}
+          className="w-full p-3 bg-[#1A1A1A] border border-[#333] rounded-md text-gray-300 focus:ring-2 focus:ring-[#00F5D4]"
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        className="mt-8 w-full py-3 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90 transition-all"
+        disabled={isScanning}
+      >
+        {isScanning ? "Scanning..." : "Scan Now"}
+      </button>
+    </form>
+
+    {/* Display scan result */}
+    {detectionResult && (
+      <div className="mt-8 p-6 bg-[#333333] rounded-lg shadow-md">
+        <p className="text-gray-300 text-lg font-medium">{detectionResult}</p>
+      </div>
+    )}
+  </div>
+</section>
 
 
         {/* Pricing */}
@@ -359,35 +565,36 @@ export default function Home() {
         </section>
 
         {/* Newsletter */}
-        <section id="contact" className="py-16 bg-[#1A1A1A] rounded-xl">
-          <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
-              Stay Ahead of Threats
-            </h2>
-            <p className="text-gray-300 mb-8">
-              Subscribe to our newsletter for the latest cybersecurity insights, threat intelligence, and protection strategies.
-            </p>
-            <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-              <input 
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                required
-                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333] rounded-lg focus:border-[#00F5D4]"
-              />
-              <button 
-                type="submit"
-                className="w-full py-3 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90"
-              >
-                Subscribe Now
-              </button>
-            </form>
-            {subscribeMessage && (
-              <p className="mt-4 text-[#00F5D4]">{subscribeMessage}</p>
-            )}
-          </div>
-        </section>
+        {/* Newsletter Subscription */}
+<section id="subscription" className="py-16 bg-[#1A1A1A] rounded-xl shadow-lg">
+  <h2 className="text-4xl font-bold text-center text-[#00F5D4] mb-6">
+    Subscribe for Updates
+  </h2>
+  <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+    <div className="flex space-x-4">
+      <input 
+        type="email" 
+        placeholder="Enter your email"
+        className="w-full px-4 py-3 bg-[#2A2A2A] border border-[#333] rounded-lg text-white placeholder:text-gray-300"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <button 
+        type="submit" 
+        className="px-6 py-3 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-[#00D2A1] transition-colors"
+        disabled={isLoading}
+      >
+        {isLoading ? "Subscribing..." : "Subscribe"}
+      </button>
+    </div>
+    {subscribeMessage && (
+      <p className="mt-4 text-center text-gray-300">{subscribeMessage}</p>
+    )}
+  </form>
+</section>
+
+      
 
         {/* Footer */}
         <footer className="py-12 mt-16 border-t border-[#333]">

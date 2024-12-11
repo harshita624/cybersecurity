@@ -1,130 +1,71 @@
+// app/api/subscribe/route.js
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
-import nodemailer from 'nodemailer';
-
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-// Subscriber Schema
-const SubscriberSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  name: {
-    type: String,
-    trim: true
-  },
-  subscribedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// Create or get existing model
-const Subscriber = mongoose.models.Subscriber || mongoose.model('Subscriber', SubscriberSchema);
-
-// Create email transporter
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-};
+import connectDB from '@/utils/dbConnect';
+import Subscriber from '@/models/Subscriber';
 
 export async function POST(request) {
   try {
-    const { email, name } = await request.json();
+    // Ensure database connection
+    await connectDB();
 
-    // Validate email
-    if (!email || !email.includes('@')) {
+    // Parse request body
+    const body = await request.json();
+    const { email, name } = body;
+
+    // Validate input
+    if (!email) {
       return NextResponse.json(
-        { message: 'Invalid email address' }, 
+        { message: 'Email is required' }, 
         { status: 400 }
       );
     }
 
-    // Check if subscriber already exists
+    // Check for existing subscriber
     const existingSubscriber = await Subscriber.findOne({ email });
     if (existingSubscriber) {
       return NextResponse.json(
         { message: 'Email already subscribed' }, 
-        { status: 409 }
+        { status: 400 }
       );
     }
 
     // Create new subscriber
-    const newSubscriber = new Subscriber({ email, name });
+    const newSubscriber = new Subscriber({
+      email,
+      name: name || undefined
+    });
+
     await newSubscriber.save();
 
-    // Create transporter
-    const transporter = createTransporter();
-
-    // Send welcome email to subscriber
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email, // Dynamically set to the user's email
-      subject: 'Welcome to CyberShield Newsletter',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1>Welcome to CyberShield!</h1>
-          <p>Hi ${name || 'there'},</p>
-          <p>Thank you for subscribing to our newsletter. We'll keep you updated with the latest cybersecurity insights and protection strategies.</p>
-          <p>Best regards,<br>CyberShield Team</p>
-        </div>
-      `
-    });
-
-    // Send internal notification
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER, // Internal tracking email
-      subject: 'New Newsletter Subscription',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>New Subscriber</h2>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Name:</strong> ${name || 'Not provided'}</p>
-          <p>Subscribed on: ${new Date().toLocaleString()}</p>
-        </div>
-      `
-    });
-
     return NextResponse.json(
-      { message: 'Subscription successful' }, 
-      { status: 200 }
+      { 
+        message: 'Subscription successful',
+        subscriber: { email, name }
+      }, 
+      { status: 201 }
     );
+
   } catch (error) {
     console.error('Subscription error:', error);
 
-    // Handle duplicate key error
-    if (error.code === 11000) {
+    // Handle specific mongoose validation errors
+    if (error.name === 'ValidationError') {
       return NextResponse.json(
-        { message: 'Email already subscribed' }, 
-        { status: 409 }
+        { 
+          message: 'Invalid input',
+          errors: Object.values(error.errors).map(err => err.message)
+        }, 
+        { status: 400 }
       );
     }
 
+    // Generic server error
     return NextResponse.json(
-      { message: 'Error processing subscription' }, 
+      { 
+        message: 'Internal server error', 
+        error: error.message 
+      }, 
       { status: 500 }
     );
   }
-}
-
-// Handle other HTTP methods
-export async function GET() {
-  return NextResponse.json(
-    { message: 'Method Not Allowed' }, 
-    { status: 405 }
-  );
 }

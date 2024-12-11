@@ -1,6 +1,5 @@
 "use client";
 
-import Navbar from '../components/Navbar';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiOutlineUser, AiOutlineMail, AiOutlinePhone } from 'react-icons/ai'; // Importing icons from react-icons
@@ -32,7 +31,7 @@ export default function Contact() {
 
   return (
     <div className="bg-gradient-to-r from-blue-200 to-blue-400 min-h-screen flex flex-col">
-      <Navbar />
+    
       <main className="flex-grow flex flex-col items-center py-12">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Contact Us</h1>
         <motion.form 

@@ -2,50 +2,48 @@ import nodemailer from "nodemailer";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    const { to, subject, message } = req.body;
+    const { to, subject, message, type } = req.body;
 
     // Validate input
-    if (!to || !subject || !message) {
+    if (!to || !subject || !message || !type) {
       return res.status(400).json({ error: "Missing required email fields" });
     }
 
-    // Consider using more reliable transporter configurations
+    // Prepare the email content based on the type
+    let emailContent;
+    if (type === "form_submission") {
+      emailContent = `<p>You have received a form submission:</p><p>${message}</p>`;
+    } else if (type === "subscription") {
+      emailContent = `<p>Thank you for subscribing! Here are your details:</p><p>${message}</p>`;
+    } else {
+      return res.status(400).json({ error: "Invalid email type" });
+    }
+
+    // Setup email transporter
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com", // More explicit configuration
-      port: 465, // Use SSL port
+      host: "smtp.gmail.com",
+      port: 465,
       secure: true, // Use SSL
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASSWORD // Recommend using App Password
+        pass: process.env.EMAIL_PASS
       }
     });
 
     try {
       const info = await transporter.sendMail({
-        from: `"Your App Name" <${process.env.EMAIL_USER}>`, // More professional sender format
+        from: `"Your App Name" <${process.env.EMAIL_USER}>`,
         to, 
         subject, 
-        html: message, // Consider using HTML for better formatting
-        replyTo: process.env.EMAIL_USER // Good practice to set reply-to
+        html: emailContent,
+        replyTo: process.env.EMAIL_USER
       });
 
       console.log("Email sent successfully:", info.messageId);
-      res.status(200).json({ 
-        message: "Email sent successfully", 
-        messageId: info.messageId 
-      });
-
+      res.status(200).json({ message: "Email sent successfully", messageId: info.messageId });
     } catch (error) {
-      console.error("Comprehensive email error:", {
-        message: error.message,
-        stack: error.stack,
-        code: error.code
-      });
-
-      res.status(500).json({ 
-        error: "Failed to send email", 
-        details: error.message 
-      });
+      console.error("Email error:", error);
+      res.status(500).json({ error: "Failed to send email", details: error.message });
     }
   } else {
     res.status(405).json({ error: "Method not allowed" });
