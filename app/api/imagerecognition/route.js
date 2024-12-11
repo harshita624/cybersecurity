@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import * as tf from '@tensorflow/tfjs';
+import * as tf from '@tensorflow/tfjs-node';
+
 import * as mobilenet from '@tensorflow-models/mobilenet';
 
 export async function POST(request) {
