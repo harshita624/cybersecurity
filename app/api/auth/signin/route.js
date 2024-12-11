@@ -1,26 +1,29 @@
-import { compare } from 'bcrypt';
-import connectMongo from '../../../lib/mongodb';
-import User from '../../../models/User'; // Going back 3 levels to reach the models directory
-// Going up 3 levels to the root folder
+// app/api/auth/signin/route.js
+import { connectToDatabase } from '../../../../lib/db';  // Correct path to db.js
+import User from '../../../../models/User';  // Correct path to User model
 
+export async function POST(request) {
+  const { email, password } = await request.json();
 
-export async function POST(req) {
+  // Connect to the database
+  await connectToDatabase();
+
   try {
-    await connectMongo();
-    const { email, password } = await req.json();
-
+    // Find the user by email
     const user = await User.findOne({ email });
+
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
     }
 
-    const isMatch = await compare(password, user.password);
-    if (!isMatch) {
-      return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
+    // Check if the password is correct
+    if (user.password !== password) {
+      return new Response(JSON.stringify({ error: 'Invalid password' }), { status: 401 });
     }
 
-    return new Response(JSON.stringify({ message: 'Login successful', user }), { status: 200 });
+    return new Response(JSON.stringify({ message: 'Login successful' }), { status: 200 });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+    console.error('Signin Error:', error);
+    return new Response(JSON.stringify({ error: 'Something went wrong!' }), { status: 500 });
   }
 }

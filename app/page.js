@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSpring, animated } from "@react-spring/web";
 import { useSession, signIn, signOut } from "next-auth/react"; 
 import { Shield, Bell, Lock, Book, ChevronRight, X, CheckCircle } from 'lucide-react';
+import ImageRecognition from "./components/ImageRecognition";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -16,13 +17,16 @@ export default function Home() {
   const [reviews, setReviews] = useState([]);
   const [showMore, setShowMore] = useState(false);
   const [name, setName] = useState("");
+  const [scanResults, setScanResults] = useState(null);
+
   // Security Tools
   const securityTools = [
     {
       name: "Threat Scanner",
       description: "Real-time vulnerability detection",
       icon: <Shield className="w-8 h-8 text-[#00F5D4]" />,
-      action: "Scan Now"
+      action: "Scan Now",
+      onClick: () => triggerScan(),  // Call triggerScan when the button is clicked
     },
     {
       name: "Password Vault",
@@ -89,6 +93,20 @@ export default function Home() {
       ]
     }
   ];
+  const triggerScan = () => {
+    setSubscribeMessage("Scanning for vulnerabilities, please wait...");
+
+    // Simulate a delay for the scan (e.g., 2 seconds)
+    setTimeout(() => {
+      // Simulate scan results
+      const results = { status: "No vulnerabilities found", level: "Safe" };
+      setScanResults(results); // Set scan results
+      setSubscribeMessage(`Scan complete: ${results.status}`); // Update message
+    }, 2000);
+  };
+
+  
+
 
   // FAQ Data
   const faqData = [
@@ -208,7 +226,7 @@ export default function Home() {
             </button>
           ) : (
             <button 
-              onClick={() => router.push('./auth/signin')}
+              onClick={() => router.push('/signin')}
               className="px-6 py-2 bg-[#00F5D4] text-black rounded-lg hover:bg-opacity-90"
             >
               Sign In
@@ -238,27 +256,32 @@ export default function Home() {
   </animated.div>
 </section>
         {/* Security Tools */}
-        <section id="tools" className="py-16">
-          <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
-            Comprehensive Security Toolkit
-          </h2>
-          <div className="grid md:grid-cols-4 gap-8">
-            {securityTools.map((tool, index) => (
-              <div 
-                key={index} 
-                className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#00F5D4] transition-all"
-              >
-                <div className="mb-4">{tool.icon}</div>
-                <h3 className="text-xl font-semibold mb-2 text-[#00F5D4]">{tool.name}</h3>
-                <p className="text-gray-400 mb-4">{tool.description}</p>
-                <button className="flex items-center text-[#00F5D4] hover:text-opacity-80">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+          {securityTools.map((tool, index) => (
+            <div key={index} className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#00F5D4] transition-all">
+              <div className="mb-4">{tool.icon}</div>
+              <h3 className="text-xl font-semibold mb-2 text-[#00F5D4]">{tool.name}</h3>
+              <p className="text-gray-400 mb-4">{tool.description}</p>
+              {scanResults ? (
+                <div className="text-green-400">{scanResults.status} - {scanResults.level}</div>
+              ) : (
+                <button onClick={tool.onClick} className="flex items-center text-[#00F5D4] hover:text-opacity-80">
                   {tool.action}
                   <ChevronRight className="ml-2" />
                 </button>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          ))}
         </section>
+
+        <section id="image-recognition" className="py-16">
+          <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+            Image Recognition Tool
+          </h2>
+          <ImageRecognition />
+        </section>
+        
+
 
         {/* Pricing */}
         <section id="pricing" className="py-16">

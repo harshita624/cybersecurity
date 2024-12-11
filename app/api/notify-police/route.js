@@ -1,8 +1,17 @@
+import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const { userDetails, location, station } = req.body;
+export async function POST(request) {
+  try {
+    const { userDetails, location, station } = await request.json();
+
+    // Validate input
+    if (!userDetails || !location || !station) {
+      return NextResponse.json(
+        { error: 'Missing required information' }, 
+        { status: 400 }
+      );
+    }
 
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
@@ -13,32 +22,38 @@ export default async function handler(req, res) {
     });
 
     const message = `
-      New incident report:
-
-      Name: ${userDetails.name}
-      Phone: ${userDetails.phone}
-      Location: Latitude: ${location.latitude}, Longitude: ${location.longitude}
-
-      Nearest Station:
-      Name: ${station.name}
-      Address: ${station.address}
-      Phone: ${station.phone}
+      Emergency Incident Report:
+      
+      Reporting Person:
+      - Name: ${userDetails.name}
+      - Phone: ${userDetails.phone}
+      
+      Location:
+      - Latitude: ${location.latitude}
+      - Longitude: ${location.longitude}
+      
+      Nearest Police Station:
+      - Name: ${station.name}
+      - Address: ${station.address}
+      - Contact: ${station.phone}
     `;
 
-    try {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: station.phone,  // You can replace this with the station's email or other method of contact
-        subject: 'New Incident Report',
-        text: message
-      });
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: station.email || station.phone,
+      subject: 'Emergency Incident Report',
+      text: message
+    });
 
-      res.status(200).json({ message: 'Details sent to police station.' });
-    } catch (error) {
-      console.error('Error sending email:', error);
-      res.status(500).json({ error: 'Failed to send details.' });
-    }
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
+    return NextResponse.json({ 
+      message: 'Details sent to police station successfully' 
+    });
+
+  } catch (error) {
+    console.error('Error in notify-police route:', error);
+    return NextResponse.json(
+      { error: 'Failed to process request' }, 
+      { status: 500 }
+    );
   }
 }

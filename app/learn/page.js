@@ -1,127 +1,138 @@
 import React from 'react';
-import LearnMoreNavbar from '../components/LearnMoreNavbar';
-import LearnMoreFooter from '../components/LearnMoreFooter';
+import { Shield, Lock, BookOpen, CloudCog, ChevronRight } from 'lucide-react';
 
 export default function LearnMore() {
+  const cybersecurityFeatures = [
+    {
+      name: "Incident Reporting",
+      description: "Quickly detect, report, and respond to security incidents with our advanced platform.",
+      icon: <Shield className="w-8 h-8 text-[#00F5D4]" />
+    },
+    {
+      name: "Security Assessments",
+      description: "In-depth vulnerability analysis and comprehensive security evaluations.",
+      icon: <Lock className="w-8 h-8 text-[#00F5D4]" />
+    },
+    {
+      name: "Cybersecurity Training",
+      description: "Empower your team with cutting-edge threat prevention knowledge.",
+      icon: <BookOpen className="w-8 h-8 text-[#00F5D4]" />
+    }
+  ];
+
+  const cybersecurityStats = [
+    {
+      value: "$10 Trillion",
+      description: "Global cybercrime damages expected in 2025"
+    },
+    {
+      value: "60%",
+      description: "Percentage of small businesses that close after a cyberattack"
+    },
+    {
+      value: "50%",
+      description: "Percentage of data breaches caused by human error"
+    }
+  ];
+
   return (
-    <>
-      <LearnMoreNavbar />
-      <div className="bg-white py-20 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl font-extrabold text-gray-800 sm:text-6xl">
-            Learn More About Our Cybersecurity Solutions
+    <div className="bg-[#0A0A0A] text-white min-h-screen">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Navigation */}
+        <nav className="flex justify-between items-center mb-16">
+          <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+            CyberShield
+          </div>
+          <div className="space-x-6">
+            <a href="/" className="text-gray-300 hover:text-[#00F5D4]">Home</a>
+            <a href="/about" className="text-gray-300 hover:text-[#00F5D4]">About</a>
+            <a href="/blog" className="text-gray-300 hover:text-[#00F5D4]">Blog</a>
+            <a href="/services" className="text-gray-300 hover:text-[#00F5D4]">Services</a>
+            <a href="/contact" className="text-gray-300 hover:text-[#00F5D4]">Contact</a>
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <section className="text-center py-24">
+          <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF] mb-6">
+            Advanced Cybersecurity Solutions
           </h1>
-          <p className="mt-6 text-xl text-gray-600">
-            Protect your organization from the increasing digital threats. Our cybersecurity solutions are designed to safeguard your business, your data, and your reputation.
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
+            Explore comprehensive protection strategies designed to safeguard your digital ecosystem from evolving cyber threats.
           </p>
-        </div>
+        </section>
 
-        <div className="mt-20 grid grid-cols-1 gap-16 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Incident Reporting Section */}
-          <div className="bg-white p-10 shadow-lg rounded-lg transform hover:scale-105 transition-transform duration-300">
-            <h3 className="text-3xl font-semibold text-gray-800">Incident Reporting</h3>
-            <p className="mt-4 text-gray-600">
-              Easily report security incidents with our user-friendly platform and get fast responses.
-            </p>
+        {/* Cybersecurity Features */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+          {cybersecurityFeatures.map((feature, index) => (
+            <div 
+              key={index} 
+              className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#00F5D4] transition-all"
+            >
+              <div className="mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-semibold mb-2 text-[#00F5D4]">{feature.name}</h3>
+              <p className="text-gray-400 mb-4">{feature.description}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* Cybersecurity Statistics */}
+        <section className="bg-[#1A1A1A] rounded-xl py-16 mb-24">
+          <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+            Cybersecurity by the Numbers
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8 px-8">
+            {cybersecurityStats.map((stat, index) => (
+              <div 
+                key={index} 
+                className="text-center bg-[#0A0A0A] border border-[#333] rounded-xl p-8 hover:border-[#7B61FF] transition-all"
+              >
+                <h4 className="text-4xl font-bold text-[#00F5D4] mb-4">{stat.value}</h4>
+                <p className="text-gray-400">{stat.description}</p>
+              </div>
+            ))}
           </div>
+        </section>
 
-          {/* Security Assessments Section */}
-          <div className="bg-white p-10 shadow-lg rounded-lg transform hover:scale-105 transition-transform duration-300">
-            <h3 className="text-3xl font-semibold text-gray-800">Security Assessments</h3>
-            <p className="mt-4 text-gray-600">
-              Identify vulnerabilities and secure your systems with our in-depth security assessments.
-            </p>
-          </div>
-
-          {/* Cybersecurity Training Section */}
-          <div className="bg-white p-10 shadow-lg rounded-lg transform hover:scale-105 transition-transform duration-300">
-            <h3 className="text-3xl font-semibold text-gray-800">Cybersecurity Training</h3>
-            <p className="mt-4 text-gray-600">
-              Equip your team with the latest knowledge and tools to protect against cyber threats.
-            </p>
-          </div>
-        </div>
-
-        {/* Why Cybersecurity Matters Section */}
-        <div className="mt-24 text-center">
-          <h2 className="text-4xl font-extrabold text-gray-800">Why Cybersecurity Matters</h2>
-          <p className="mt-6 text-xl text-gray-600">
-            Cybersecurity is not just about protecting data; it's about maintaining trust, ensuring business continuity, and preventing financial loss.
+        {/* Call to Action */}
+        <section className="text-center py-16">
+          <h2 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+            Ready to Protect Your Organization?
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
+            Take the first step towards comprehensive cybersecurity with our tailored solutions.
           </p>
-        </div>
+          <div className="flex justify-center space-x-6">
+            <a href="/form">
+              <button className="px-10 py-4 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90">
+                Get Started
+              </button>
+            </a>
+            <a href="/contact">
+              <button className="px-10 py-4 border border-[#7B61FF] text-[#7B61FF] rounded-lg hover:bg-[#7B61FF]/10">
+                Request Consultation
+              </button>
+            </a>
+          </div>
+        </section>
 
-        {/* Statistics Section */}
-        <div className="mt-24 text-center bg-gray-50 py-16 rounded-lg shadow-lg">
-          <h3 className="text-4xl font-extrabold text-gray-800">Cybersecurity by the Numbers</h3>
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-16">
-            {/* Statistic 1 */}
-            <div className="text-center">
-              <h4 className="text-4xl font-semibold text-gray-800">$10 Trillion</h4>
-              <p className="mt-2 text-gray-600">Global cybercrime damages expected in 2025.</p>
+        {/* Footer */}
+        <footer className="py-12 mt-16 border-t border-[#333]">
+          <div className="container mx-auto max-w-7xl flex justify-between items-center">
+            <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+              CyberShield
             </div>
-            {/* Statistic 2 */}
-            <div className="text-center">
-              <h4 className="text-4xl font-semibold text-gray-800">60%</h4>
-              <p className="mt-2 text-gray-600">Percentage of small businesses that close after a cyberattack.</p>
+            <div className="flex space-x-6">
+              <a href="#" className="text-gray-300 hover:text-[#00F5D4]">Privacy Policy</a>
+              <a href="#" className="text-gray-300 hover:text-[#00F5D4]">Terms of Service</a>
+              <a href="#" className="text-gray-300 hover:text-[#00F5D4]">Contact</a>
             </div>
-            {/* Statistic 3 */}
-            <div className="text-center">
-              <h4 className="text-4xl font-semibold text-gray-800">50%</h4>
-              <p className="mt-2 text-gray-600">Percentage of data breaches caused by human error.</p>
+            <div className="text-gray-400">
+              © 2024 CyberShield. All rights reserved.
             </div>
           </div>
-        </div>
-
-        {/* How We Can Help Section */}
-        <div className="mt-24 text-center">
-          <h3 className="text-3xl font-semibold text-gray-800">How We Can Help</h3>
-          <p className="mt-6 text-xl text-gray-600">
-            Our tailored solutions help businesses of all sizes protect their digital assets, with customized security strategies that fit your needs.
-          </p>
-        </div>
-
-        {/* Call to Action Section */}
-        <div className="mt-24 text-center">
-          <h4 className="text-2xl font-semibold text-gray-800">Ready to Protect Your Organization?</h4>
-          <div className="mt-6 space-x-4">
-            <a href="#" className="inline-block px-8 py-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-300">
-              Get Started
-            </a>
-            <a href="#" className="inline-block px-8 py-4 text-white bg-gray-600 rounded-lg hover:bg-gray-700 transition-all duration-300">
-              Request a Consultation
-            </a>
-          </div>
-        </div>
-
-        {/* Testimonials Section */}
-        <div className="mt-24 text-center">
-          <h3 className="text-3xl font-semibold text-gray-800">What Our Clients Say</h3>
-          <div className="mt-12 space-y-6">
-            <p className="text-xl text-gray-600">
-              "The cybersecurity solutions provided have helped us mitigate threats and secure our sensitive data."
-              <span className="block mt-4 text-lg font-semibold text-gray-800">- John Doe, CTO at TechSolutions</span>
-            </p>
-            <p className="text-xl text-gray-600">
-              "Their training program was comprehensive and allowed our team to handle security threats confidently."
-              <span className="block mt-4 text-lg font-semibold text-gray-800">- Jane Smith, IT Manager at SecureTech</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Contact Us Section */}
-        <div className="mt-24 text-center">
-          <h3 className="text-3xl font-semibold text-gray-800">Contact Us</h3>
-          <div className="mt-6 space-x-4">
-            <a href="mailto:contact@cybersecurity.com" className="inline-block px-8 py-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-300">
-              Email Us
-            </a>
-            <a href="tel:+123456789" className="inline-block px-8 py-4 text-white bg-gray-600 rounded-lg hover:bg-gray-700 transition-all duration-300">
-              Call Us
-            </a>
-          </div>
-        </div>
+        </footer>
       </div>
-      <LearnMoreFooter />
-    </>
+    </div>
   );
 }

@@ -75,14 +75,30 @@ export default function NearestStation() {
     }
   };
 
+  // Update user details handler with explicit event parameter
+  const handleNameChange = (e) => {
+    setUserDetails(prevDetails => ({
+      ...prevDetails,
+      name: e.target.value
+    }));
+  };
+
+  // Update phone details handler with explicit event parameter
+  const handlePhoneChange = (e) => {
+    setUserDetails(prevDetails => ({
+      ...prevDetails,
+      phone: e.target.value
+    }));
+  };
+
   return (
-    <div className="bg-[#0A0A0A] text-white min-h-screen py-12">
+    <div className="bg-[#0A0A0A] text-black min-h-screen py-12">
       <div className="container mx-auto px-4 max-w-2xl">
         <h1 className="text-4xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
           Nearest Police Station
         </h1>
 
-        {error && <p className="text-red-500 mb-4">{error}</p>} {/* Error message if location access is denied */}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
         {location && nearestStation ? (
           <div>
@@ -97,8 +113,8 @@ export default function NearestStation() {
                 <input
                   type="text"
                   value={userDetails.name}
-                  onChange={(e) => setUserDetails({ ...userDetails, name: e.target.value })}
-                  className="w-full p-2 mt-2 border border-gray-500 rounded-md"
+                  onChange={handleNameChange}
+                  className="w-full p-2 mt-2 border border-gray-500 rounded-md text-black"
                 />
               </div>
 
@@ -107,8 +123,8 @@ export default function NearestStation() {
                 <input
                   type="text"
                   value={userDetails.phone}
-                  onChange={(e) => setUserDetails({ ...userDetails, phone: e.target.value })}
-                  className="w-full p-2 mt-2 border border-gray-500 rounded-md"
+                  onChange={handlePhoneChange}
+                  className="w-full p-2 mt-2 border border-gray-500 rounded-md text-black"
                 />
               </div>
 

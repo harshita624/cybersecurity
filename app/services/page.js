@@ -2,98 +2,120 @@
 
 // pages/services.js
 "use client";
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import Link from 'next/link';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { FaShieldAlt, FaHandsHelping, FaUsers, FaRocket } from 'react-icons/fa'; // Example icons
+import { Shield, Bell, Lock, Book, ChevronRight } from 'lucide-react';
 
-const Services = () => {
+export default function Services() {
+  const serviceTools = [
+    {
+      name: "Security Awareness Campaign",
+      description: "Comprehensive education on digital safety practices",
+      icon: <Shield className="w-8 h-8 text-[#00F5D4]" />,
+      link: "/campaign"
+    },
+    {
+      name: "Law Enforcement Collaboration",
+      description: "Strategic partnerships for rapid incident resolution",
+      icon: <Bell className="w-8 h-8 text-[#00F5D4]" />,
+      link: "/police-collaboration"
+    },
+    {
+      name: "Victim Support Services",
+      description: "Immediate and compassionate cybercrime assistance",
+      icon: <Lock className="w-8 h-8 text-[#00F5D4]" />,
+      link: "/customer-service"
+    },
+    {
+      name: "Advanced Technology Solutions",
+      description: "Cutting-edge security management tools",
+      icon: <Book className="w-8 h-8 text-[#00F5D4]" />,
+      link: "/advanced-technology"
+    }
+  ];
+
   return (
-    <div>
-      <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center py-10">
-        <h1 className="text-5xl font-bold text-gray-900 mb-6">Our Services</h1>
-        <p className="text-lg text-gray-600 max-w-2xl text-center mb-8">
-          We offer a range of specialized services designed to safeguard your online presence and empower you with knowledge to stay safe in the digital world.
-        </p>
+    <div className="bg-[#0A0A0A] text-white min-h-screen">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <nav className="flex justify-between items-center mb-16">
+          <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+            CyberShield
+          </div>
+          <div className="space-x-6">
+            <a href="/" className="text-gray-300 hover:text-[#00F5D4]">Home</a>
+            <a href="/about" className="text-gray-300 hover:text-[#00F5D4]">About</a>
+            <a href="/services" className="text-gray-300 hover:text-[#00F5D4]">Services</a>
+          </div>
+          <div className="flex space-x-4">
+            <a href="/signin" className="px-4 py-2 border border-[#00F5D4] text-[#00F5D4] rounded-md hover:bg-[#00F5D4] hover:text-black transition-colors">
+              Sign In
+            </a>
+            <a href="/contact" className="px-4 py-2 bg-[#00F5D4] text-black rounded-md hover:bg-opacity-90">
+              Contact
+            </a>
+          </div>
+        </nav>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl w-full px-4">
-          {/** Card 1 **/}
-          <ServiceCard 
-            imgSrc="/images/s1.jpeg"
-            imgAlt="Campaign for Security Awareness"
-            title="Campaign for Security Awareness"
-            description="We run extensive campaigns to raise awareness about security issues and best practices for safeguarding your personal information."
-            link="/campaign"
-            icon={<FaShieldAlt className="text-4xl text-blue-600 mb-4" />}
-          />
+        {/* Rest of the code remains the same */}
+        <section className="text-center py-16">
+          <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF] mb-6">
+            Our Services
+          </h1>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
+            Comprehensive cybersecurity solutions designed to protect, educate, and empower your digital ecosystem.
+          </p>
+        </section>
 
-          {/** Card 2 **/}
-          <ServiceCard 
-            imgSrc="/images/s2.jpeg"
-            imgAlt="Collaboration with Police and Government"
-            title="Collaboration with Police and Government"
-            description="Our partnership with law enforcement agencies ensures faster identification and resolution of theft incidents, making your safety our priority."
-            link="/police-collaboration"
-            icon={<FaHandsHelping className="text-4xl text-blue-600 mb-4" />}
-          />
+        <section className="py-16">
+          <div className="grid md:grid-cols-4 gap-8">
+            {serviceTools.map((service, index) => (
+              <div 
+                key={index} 
+                className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#00F5D4] transition-all"
+              >
+                <div className="mb-4">{service.icon}</div>
+                <h3 className="text-xl font-semibold mb-2 text-[#00F5D4]">{service.name}</h3>
+                <p className="text-gray-400 mb-4">{service.description}</p>
+                <a href={service.link} className="flex items-center text-[#00F5D4] hover:text-opacity-80">
+                  Learn More
+                  <ChevronRight className="ml-2" />
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
 
-          {/** Card 3 **/}
-          <ServiceCard 
-            imgSrc="/images/s3.png"
-            imgAlt="Fast Customer Service for Victims"
-            title="Fast Customer Service for Victims"
-            description="We provide prompt assistance to victims of cybercrime, ensuring they receive the help they need when they need it the most."
-            link="/customer-service"
-            icon={<FaUsers className="text-4xl text-blue-600 mb-4" />}
-          />
+        <section className="py-16 bg-[#1A1A1A] rounded-xl">
+          <div className="max-w-xl mx-auto text-center">
+            <h2 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+              Need Personalized Protection?
+            </h2>
+            <p className="text-gray-300 mb-8">
+              Connect with our cybersecurity experts to develop a tailored security strategy.
+            </p>
+            <a href="/contact">
+              <button className="w-full py-3 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90">
+                Contact Our Team
+              </button>
+            </a>
+          </div>
+        </section>
 
-          {/** Card 4 **/}
-          <ServiceCard 
-            imgSrc="/images/s4.png"
-            imgAlt="Advanced Technology for Better Experience"
-            title="Advanced Technology for Better Experience"
-            description="Our advanced technology solutions ensure a seamless user experience, helping you manage your security needs with ease."
-            link="/advanced-technology"
-            icon={<FaRocket className="text-4xl text-blue-600 mb-4" />}
-          />
-        </div>
-
-        <div className="mt-10 text-center">
-          <p className="text-lg text-gray-600 mb-4">Ready to enhance your security?</p>
-          <Link href="/contact" passHref>
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition duration-300 transform hover:scale-105">
-              Contact Us
-            </button>
-          </Link>
-        </div>
-      </main>
-      <Footer />
+        <footer className="py-12 mt-16 border-t border-[#333]">
+          <div className="container mx-auto max-w-7xl flex justify-between items-center">
+            <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF]">
+              CyberShield
+            </div>
+            <div className="flex space-x-6">
+              <a href="#" className="text-gray-300 hover:text-[#00F5D4]">Privacy Policy</a>
+              <a href="#" className="text-gray-300 hover:text-[#00F5D4]">Terms of Service</a>
+            </div>
+            <div className="text-gray-400">
+              © 2024 CyberShield. All rights reserved.
+            </div>
+          </div>
+        </footer>
+      </div>
     </div>
   );
-};
-
-// Reusable Service Card Component
-const ServiceCard = ({ imgSrc, imgAlt, title, description, link, icon }) => (
-  <motion.div
-    whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.2)" }}
-    transition={{ type: "spring", stiffness: 300 }}
-    className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
-  >
-    {icon}
-    <img
-      src={imgSrc}
-      alt={imgAlt}
-      className="w-full h-48 object-cover rounded-lg mb-4"
-    />
-    <Link href={link} passHref>
-      <h2 className="text-xl font-bold text-gray-800 cursor-pointer hover:text-blue-600 transition duration-300 mb-2">
-        {title}
-      </h2>
-    </Link>
-    <p className="text-gray-600">{description}</p>
-  </motion.div>
-);
-
-export default Services;
+}

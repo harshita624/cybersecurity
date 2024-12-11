@@ -1,0 +1,20 @@
+[
+    {
+      "id": 1,
+      "name": "Central Police Station",
+      "address": "123 Main Street, Cityville",
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "phone": "+1-555-POLICE",
+      "email": "central.station@police.gov"
+    },
+    {
+      "id": 2,
+      "name": "Downtown Police Station", 
+      "address": "456 Urban Avenue, Cityville",
+      "latitude": 40.7150,
+      "longitude": -74.0130,
+      "phone": "+1-555-COPS",
+      "email": "downtown.station@police.gov"
+    }
+  ]
