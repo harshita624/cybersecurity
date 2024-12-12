@@ -1,12 +1,8 @@
-// Change this:
-module.exports = {
+// next.config.mjs
+export default {
     reactStrictMode: true,
   };
   
-  // To this:
-  export default {
-    reactStrictMode: true,
-  };
   
 
 
