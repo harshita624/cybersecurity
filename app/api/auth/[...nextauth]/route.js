@@ -12,6 +12,7 @@ export const authOptions = {
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
+        secret: process.env.NEXTAUTH_SECRET
       },
       async authorize(credentials) {
         const client = new MongoClient(uri);
