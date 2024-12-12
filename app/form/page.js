@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, FileText, Upload, X, Check, Home } from 'lucide-react';
-import emailjs from 'emailjs-com';
-import { useRouter } from 'next/router';
-
+import { useRouter } from 'next/navigation';
+import emailjs from '@emailjs/browser';
 const goToHome = () => router.push('/');
 
 
