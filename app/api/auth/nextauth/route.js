@@ -1,4 +1,5 @@
 // app/api/auth/[...nextauth]/route.js
+require('dotenv').config();
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { MongoClient } from 'mongodb';
