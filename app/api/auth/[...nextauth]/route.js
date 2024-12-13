@@ -2,13 +2,12 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { MongoClient } from 'mongodb';
-import bcrypt from 'bcryptjs'; // Recommended for password hashing
 
 const uri = "mongodb+srv://23053364:kartik4903@cluster0.ma397.mongodb.net/myapp?retryWrites=true&w=majority";
 
 export const authOptions = {
-  // Add the secret at the top level
-  secret: process.env.NEXTAUTH_SECRET,
+  // Explicitly set the secret
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-very-long-random-secret-key-here',
   
   providers: [
     CredentialsProvider({
@@ -27,22 +26,11 @@ export const authOptions = {
 
           const user = await usersCollection.findOne({ email: credentials.email });
 
-          if (user) {
-            // Compare hashed password
-            const isPasswordCorrect = await bcrypt.compare(
-              credentials.password, 
-              user.password
-            );
-
-            if (isPasswordCorrect) {
-              return { 
-                id: user._id.toString(), 
-                email: user.email 
-              };
-            }
+          if (user && user.password === credentials.password) {
+            return { id: user._id.toString(), email: user.email };
+          } else {
+            return null;
           }
-          
-          return null;
         } catch (error) {
           console.error('Authentication error:', error);
           return null;
@@ -52,6 +40,15 @@ export const authOptions = {
       },
     }),
   ],
+  
+  // Add callback to log secret status
+  callbacks: {
+    async session({ session }) {
+      console.log('NEXTAUTH_SECRET is:', process.env.NEXTAUTH_SECRET ? 'DEFINED' : 'UNDEFINED');
+      return session;
+    }
+  },
+  
   pages: {
     signIn: '/auth/signin',
   },
