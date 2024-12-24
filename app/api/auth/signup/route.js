@@ -2,21 +2,23 @@ import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
+  const uri = process.env.MONGODB_URI;
+  const client = new MongoClient(uri);
+
   try {
+    // Parse incoming request JSON
     const { email, password } = await req.json();
 
     // Validate input
     if (!email || !password) {
       return new Response(
         JSON.stringify({ success: false, message: 'Email and password are required' }),
-        { status: 400 }
+        { status: 400 }  // Bad Request
       );
     }
 
-    const uri = process.env.MONGODB_URI;
-    const client = new MongoClient(uri);
+    // Connect to MongoDB
     await client.connect();
-
     const db = client.db(process.env.MONGODB_DB || 'myapp');
     const usersCollection = db.collection('users');
 
@@ -25,7 +27,7 @@ export async function POST(req) {
     if (existingUser) {
       return new Response(
         JSON.stringify({ success: false, message: 'User already exists' }),
-        { status: 409 }
+        { status: 409 }  // Conflict
       );
     }
 
@@ -41,13 +43,15 @@ export async function POST(req) {
 
     return new Response(
       JSON.stringify({ success: true, message: 'User registered successfully' }),
-      { status: 201 }
+      { status: 201 }  // Created
     );
   } catch (error) {
     console.error("Error in signup API:", error);
     return new Response(
       JSON.stringify({ success: false, message: 'Server error' }),
-      { status: 500 }
+      { status: 500 }  // Internal Server Error
     );
+  } finally {
+    await client.close(); // Always close the database connection
   }
 }

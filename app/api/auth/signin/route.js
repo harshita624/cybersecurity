@@ -1,48 +1,49 @@
+// app/api/auth/signin/route.js (or a similar file path in your project)
 import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
-export async function POST(req) {
+export async function POST(req, res) {
   const uri = process.env.MONGODB_URI;
-  const client = new MongoClient(uri);
 
   try {
-    const { email, password } = await req.json();
+    const { email, password } = await req.json(); // Parse JSON from request body
+
+    // Check if email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required.' });
+    }
+
+    const client = new MongoClient(uri);
     await client.connect();
     const db = client.db(process.env.MONGODB_DB);
     const usersCollection = db.collection('users');
 
+    // Find user by email
     const user = await usersCollection.findOne({ email });
 
+    // If user doesn't exist
     if (!user) {
-      return new Response(
-        JSON.stringify({ success: false, message: 'User not found' }),
-        { status: 404 }
-      );
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    // Validate password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return new Response(
-        JSON.stringify({ success: false, message: 'Invalid password' }),
-        { status: 401 }
-      );
+      return res.status(401).json({ success: false, message: 'Invalid password' });
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Sign-in successful',
-        user: { id: user._id, email: user.email, name: user.name },
-      }),
-      { status: 200 }
-    );
+    // If user is authenticated successfully
+    return res.status(200).json({
+      success: true,
+      message: 'Sign-in successful',
+      user: {
+        id: user._id.toString(), // Convert MongoDB ObjectId to string
+        email: user.email,
+        name: user.name,
+      },
+    });
   } catch (error) {
     console.error('Error in sign-in API:', error);
-    return new Response(
-      JSON.stringify({ success: false, message: 'Internal server error' }),
-      { status: 500 }
-    );
-  } finally {
-    await client.close(); // Always close the database connection
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 }

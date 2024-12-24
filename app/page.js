@@ -21,18 +21,21 @@ export default function Home() {
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState("");
   const [signInError, setSignInError] = useState("");
+  const [signUpError, setSignUpError] = useState(''); 
   const [isLoading, setIsLoading] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [subscribeMessage, setSubscribeMessage] = useState("");
   const [name, setName] = useState("");
   const scanResults = null;
 
-  // Redirect if session exists
-  if(session){
-    router.replace('/homePage')
-  }
+ 
+  if (session) {
+    router.replace('/'); // Redirect if already signed in
+    return null; // Important: Return null to prevent rendering the sign-in form
+}
 
   // Animation Configuration
   const heroAnimation = useSpring({
@@ -40,6 +43,16 @@ export default function Home() {
     to: { opacity: 1, transform: "translateY(0px)" },
     delay: 200,
   });
+
+  const openSignInModal = () => {
+    setShowSignInModal(true);
+    setShowSignUpModal(false); // Close sign-up modal if open
+  };
+
+  const openSignUpModal = () => {
+    setShowSignInModal(false); // Close sign-in modal if open
+    setShowSignUpModal(true);   // Open sign-up modal
+  };
 
   // Static Data Collections
   const securityTools = [
@@ -217,29 +230,63 @@ export default function Home() {
 
   const handleSubmitSignIn = async (event) => {
     event.preventDefault();
-  
+    setIsLoading(true);
+    setSignInError(""); // Clear any previous errors
+
     try {
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        console.log('Sign-in successful:', data.message);
-      } else {
-        console.error('Sign-in failed:', data.message);
-        setSignInError(data.message);
-      }
+        const res = await signIn("credentials", { // Use signIn from next-auth/react
+            redirect: false, // Prevent default redirect behavior
+            email,
+            password,
+        });
+
+        if (res?.error) {
+            setSignInError(res.error);
+        } else {
+            router.push("/homePage"); // Manually redirect on success
+        }
     } catch (error) {
-      console.error('Error during sign-in:', error);
-      setSignInError('An error occurred during sign-in.');
+        console.error("Sign-in error:", error);
+        setSignInError("An error occurred during sign-in.");
+    } finally {
+        setIsLoading(false);
     }
   };
 
+
+
+
+  
+    // Handle form submission for sign-up
+  const handleSubmitSignUp = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setSignUpError(""); // Clear any previous errors
+
+    try {
+        const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            setSignUpError(data.message); // Show error if signup fails
+        } else {
+            router.push("/login"); // Redirect to login page after successful signup
+        }
+    } catch (error) {
+        console.error("Sign-up error:", error);
+        setSignUpError("An error occurred during sign-up.");
+    } finally {
+        setIsLoading(false);
+    }
+  };
+  
   const triggerScan = async () => {
     setSubscribeMessage("Scanning for vulnerabilities, please wait...");
     
@@ -328,6 +375,8 @@ export default function Home() {
             >
               Sign In
             </button>
+             {/* Sign-Up Button */}
+      <button onClick={openSignUpModal}  className="bg-[#00F5D4] text-black px-4 py-2 rounded-lg">Sign Up</button>
 
             {/* Sign-In Modal */}
             {showSignInModal && (
@@ -388,6 +437,58 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            {/* Sign-Up Modal */}
+{showSignUpModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-[#1A1A1A] p-8 rounded-xl shadow-lg max-w-md w-full">
+      <h2 className="text-3xl font-semibold text-[#00F5D4] mb-6 text-center">Sign Up</h2>
+      <form onSubmit={handleSubmitSignUp}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-300" htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            className="w-full px-4 py-3 mt-2 bg-[#2A2A2A] border border-[#333] rounded-lg text-white"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-300" htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            className="w-full px-4 py-3 mt-2 bg-[#2A2A2A] border border-[#333] rounded-lg text-white"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {signUpError && (
+          <p className="text-red-500 text-sm mb-4">{signUpError}</p>
+        )}
+        <button 
+          type="submit" 
+          className="w-full py-3 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-[#00D2A1] transition-colors"
+          disabled={isLoading}
+        >
+          {isLoading ? "Signing Up..." : "Sign Up"}
+        </button>
+      </form>
+      <div className="text-center mt-4">
+        <button 
+          className="text-sm text-[#7B61FF] hover:underline"
+          onClick={() => setShowSignUpModal(false)}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
           </div>
         </nav>
 
@@ -412,6 +513,7 @@ export default function Home() {
             </div>
           </animated.div>
         </section>
+       
 
         {/* Security Tools */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
