@@ -29,21 +29,28 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [subscribeMessage, setSubscribeMessage] = useState("");
   const [name, setName] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
   const scanResults = null;
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
  
   if (session) {
     router.replace('/'); // Redirect if already signed in
     return null; // Important: Return null to prevent rendering the sign-in form
 }
 
-  // Animation Configuration
-  const heroAnimation = useSpring({
-    from: { opacity: 0, transform: "translateY(-50px)" },
-    to: { opacity: 1, transform: "translateY(0px)" },
-    delay: 200,
-  });
+const heroAnimation = useSpring({
+  from: { opacity: 0, transform: "translateY(-50px)" },
+  to: { opacity: 1, transform: "translateY(0px)" },
+  delay: 200,
+});
 
+  // Render only if client-side
+  if (!isMounted) {
+    return null; // or some placeholder component
+  }
   const openSignInModal = () => {
     setShowSignInModal(true);
     setShowSignUpModal(false); // Close sign-up modal if open
