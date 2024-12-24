@@ -1,17 +1,22 @@
-/// utils/dbConnect.js
 // utils/dbConnect.js
 import mongoose from 'mongoose';
 
 const connectDB = async () => {
-    if (mongoose.connection.readyState >= 1) return;
+  if (mongoose.connection.readyState === 1) {
+    console.log("Already connected to database");
+    return;
+  }
 
-    try {
-        await mongoose.connect(process.env.MONGODB_URI); // Options are no longer required
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
-        throw error;
-    }
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Database connected");
+  } catch (error) {
+    console.error("Database connection error:", error);
+    throw new Error("Database connection failed");
+  }
 };
 
 export default connectDB;
