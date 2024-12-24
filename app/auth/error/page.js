@@ -1,4 +1,5 @@
 // app/auth/error.js
+"use client";
 import { useRouter } from 'next/navigation';
 
 const ErrorPage = () => {
