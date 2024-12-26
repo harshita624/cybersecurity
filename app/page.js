@@ -34,31 +34,28 @@ export default function Home() {
 
   useEffect(() => {
     setIsMounted(true);
+    const currentLocation = window.location;
+    console.log(currentLocation);
   }, []);
- 
-  if (session) {
-    router.replace('/'); // Redirect if already signed in
-    return null; // Important: Return null to prevent rendering the sign-in form
-}
-
+  
+  
 const heroAnimation = useSpring({
   from: { opacity: 0, transform: "translateY(-50px)" },
   to: { opacity: 1, transform: "translateY(0px)" },
   delay: 200,
 });
-
-  // Render only if client-side
+  // Only proceed with render if mounted
   if (!isMounted) {
-    return null; // or some placeholder component
+    return null;
   }
   const openSignInModal = () => {
     setShowSignInModal(true);
-    setShowSignUpModal(false); // Close sign-up modal if open
+    setShowSignUpModal(false);
   };
 
   const openSignUpModal = () => {
-    setShowSignInModal(false); // Close sign-in modal if open
-    setShowSignUpModal(true);   // Open sign-up modal
+    setShowSignInModal(false);
+    setShowSignUpModal(true);
   };
 
   // Static Data Collections
@@ -250,7 +247,7 @@ const heroAnimation = useSpring({
         if (res?.error) {
             setSignInError(res.error);
         } else {
-            router.push("/homePage"); // Manually redirect on success
+            router.push("/"); // Manually redirect on success
         }
     } catch (error) {
         console.error("Sign-in error:", error);
