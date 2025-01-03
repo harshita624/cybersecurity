@@ -91,45 +91,51 @@ const FormPage = () => {
     setFormData((prev) => ({ ...prev, files }));
   };
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
   
-
-  // Your form data here
-  const formData = {
-    name: "",
-    email: "",
-    phone: "",
-    dob: {
-        day: "",
-        month: "",
-        year: "",
-    },
-};
-
-const templateParams = {
-  name: formData?.name || "",
-  email: formData?.email || "",
-  phone: formData?.phone || "",
-  dob: `${formData?.dob?.day || ""}-${formData?.dob?.month || ""}-${formData?.dob?.year || ""}`,
-};
-
-
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(JSON.stringify({
+          status: response.status,
+          statusText: response.statusText,
+          details: errorData
+        }));
+      }
   
-  emailjs
-  .send('service_zq2u0q6', 'template_kabtynl', templateParams, 'CdnXrL4puw-y-Q5_y')
-  .then(
-    (result) => {
-      console.log('Success:', result.text);
-      setSubmissionStatus('Form submitted successfully!');
-    },
-    (error) => {
-      console.error('Error:', error.text);
-      setSubmissionStatus('There was an error submitting your form. Please try again.');
+      const data = await response.json();
+      // Handle success
+      
+    } catch (error) {
+      // Parse error message if it's stringified JSON
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(error.message);
+      } catch {
+        errorDetails = { message: error.message };
+      }
+  
+      console.error('Form submission failed:', {
+        error: errorDetails,
+        timestamp: new Date().toISOString()
+      });
+  
+      alert(`Submission failed: ${errorDetails.status === 400 ? 
+        'Please check your form data' : 
+        'Please try again later'}`);
     }
-  );
-};
+  };
+  
+  
 
   const resetForm = () => {
     setFormData({
