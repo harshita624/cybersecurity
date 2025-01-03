@@ -8,6 +8,7 @@ import { Shield, Bell, Lock, Book, ChevronRight, X, CheckCircle } from 'lucide-r
 import Papa from "papaparse";
 import ThreatDetectionPrediction from './components/ThreatDetectionPrediction';
 import ImageRecognition from "./components/ImageRecognition";
+import VirusTotalScanner from './components/VirusTotalScanner';
 
 export default function Home() {
   // Session and Router Management
@@ -31,6 +32,8 @@ export default function Home() {
   const [name, setName] = useState("");
   const [isMounted, setIsMounted] = useState(false);
   const scanResults = null;
+  const [url, setUrl] = useState(""); // Initialize the state for the URL
+
 
   useEffect(() => {
     setIsMounted(true);
@@ -231,7 +234,15 @@ const heroAnimation = useSpring({
       setFile(uploadedFile);
     }
   };
-
+  const handleScanURL = (e) => {
+    e.preventDefault(); // Prevent form submission
+    
+    const url = e.target.url.value; // Get the URL entered in the form
+    console.log("Scanning URL:", url); // Log the URL for now (you can replace this with your actual scanning logic)
+    
+    // You can add logic here to process the URL, like sending it to an API or performing a scan.
+  };
+  
   const handleSubmitSignIn = async (event) => {
     event.preventDefault();
     setIsLoading(true);
@@ -537,10 +548,56 @@ const heroAnimation = useSpring({
     </div>
   ))}
 </section>
+{/* Page Title */}
+<header className="text-center py-12">
+      <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00F5D4] to-[#7B61FF] mb-4">
+        Scan URL for Threats
+      </h1>
+      <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+        Enter a URL to check for potential security risks, malware, and phishing attempts. 
+        Protect your digital space with CyberShield.
+      </p>
+    </header>
+
+    {/* Scan Form */}
+    <section className="max-w-4xl mx-auto bg-[#1A1A1A] p-8 rounded-xl shadow-lg">
+      <form onSubmit={handleScanURL}>
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="url">
+            Enter URL
+          </label>
+          <input
+            type="url"
+            id="url"
+            className="w-full px-4 py-3 bg-[#2A2A2A] border border-[#333] rounded-lg text-white"
+            placeholder="https://example.com"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full py-3 bg-[#00F5D4] text-black font-semibold rounded-lg hover:bg-opacity-90 transition-colors"
+          disabled={isLoading}
+        >
+          {isLoading ? "Scanning..." : "Scan URL"}
+        </button>
+      </form>
+    </section>
+
+    {/* Scan Results */}
+    {scanResults && (
+      <section className="mt-12 bg-[#1A1A1A] p-8 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold text-[#00F5D4] mb-6">Scan Results</h2>
+        <pre className="text-sm text-gray-300 bg-[#2A2A2A] p-4 rounded-lg overflow-x-auto">
+          {JSON.stringify(scanResults, null, 2)}
+        </pre>
+      </section>
+    )}
 
 
-
-
+  
                {/* Threat Detection Form */}
                <section className="py-16 mt-16 bg-[#1A1A1A] rounded-xl shadow-lg">
   <div className="max-w-4xl mx-auto text-center">
